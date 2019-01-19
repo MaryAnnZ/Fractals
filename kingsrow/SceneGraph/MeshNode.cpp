@@ -116,7 +116,7 @@ int MeshNode::getDrawSize()
 
 Texture* MeshNode::getTexture()
 {
-	return  activeTexture;
+	return  myTexture;
 }
 
 glm::mat4 MeshNode::getModelViewProjectionMatrix()

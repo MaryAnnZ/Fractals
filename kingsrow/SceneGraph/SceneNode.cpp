@@ -32,15 +32,14 @@ void SceneNode::attachChild(SceneNode* child)
 } 
 
 //This leaves the empty transform nodes hanging which is kind of bad, should be refactored to also take out the empty transform nodes.
-bool SceneNode::detachChild(SceneNode* deleteChild)
+SceneNode* SceneNode::detachChild(SceneNode* deleteChild)
 {
 	for (std::vector<SceneNode*>::iterator iter = childList.begin(); iter != childList.end(); iter++)
 	{
 		if (*iter == deleteChild)
 		{
 			childList.erase(iter);
-			delete *iter;
-			return true;
+			return *iter;
 		}
 		return (*iter)->detachChild(deleteChild);
 	}

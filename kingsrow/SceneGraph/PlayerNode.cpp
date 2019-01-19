@@ -57,7 +57,7 @@ void PlayerNode::update(double deltaTime, InputHandler* input)
 
 	TransformNode* node;
 	glm::mat4 parentTransform;
-	glm::vec3 positionViewHack = glm::vec3(position.x, position.y + 1, position.z);	//bumps up the camera position by 1
+	glm::vec3 positionViewHack = glm::vec3(position.x, position.y , position.z);	//bumps up the camera position by 1
 	if (parent->getType() == NodeType::TRANSFORM_NODE)
 	{
 		node = (TransformNode*)parent;

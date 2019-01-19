@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <math.h>
 
 
 #include <stdio.h>
@@ -16,6 +17,7 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <map>
 #include <sstream>
+#include <fstream>
 
 #include "InputHandler.h"
 #include "Render\Renderer.h"
@@ -30,6 +32,31 @@
 #include "SceneGraph\LightNode\SpotLightNode.h"
 #include "Texture\SamplerStateEnum.h"
 #include "Texture\MipmapStateEnum.h"
+#include "Rule.h"
+
+#define PI 3.14159265
+
+std::string w;
+SceneNode* sceneGraph;
+std::vector<MeshNode*> drawArray;
+std::vector<glm::mat4> transformationsStack;
+glm::mat4 turtlePosition =  glm::mat4(
+	1, 0, 0, 0,
+	0, 1, 0, 0,
+	0, 0, 1, 0,
+	0, 0, 0, 1);
+std::string currentSequence;
+std::vector<Rule> rules;
+
+void createCylinder(int length, int radius, bool col = true);
+void translateH(int length);
+void rotateU(int angle);
+void rotateR(int angle);
+void rotateH(int angle);
+void turn();
+void saveTransformation();
+void resetTransformation();
+void printMatrix(glm::mat4 matrix);
 
 
 int main() {
@@ -43,6 +70,8 @@ int main() {
 
 	InputHandler* input = new InputHandler();
 
+	sceneGraph = new SceneNode(generateUuid(), NodeType::ROOT_NODE);
+	sceneGraph->setParent(nullptr);
 
 	//Texture* rainbowTexture = new Texture("../kingsrow/Assets/Models/duck_textures/rainbow.jpg");
 
@@ -58,31 +87,126 @@ int main() {
 
 	std::vector<LightNode*> lights1;
 	//room 1
-	LightNode* firstLight = new PointLightNode(generateUuid(), glm::vec3(0, 2, 0), 1.0f, glm::vec3(1, 1, 1), LightType::POINT_LIGHT);
-
+	LightNode* firstLight = new PointLightNode(generateUuid(), glm::vec3(0, 2, 0), 10.0f, glm::vec3(1, 1, 1), LightType::POINT_LIGHT);
 	lights1.push_back(firstLight);
-
 	renderer->setLights(lights1);
 
-	MeshNode* tableMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDER);
+	std::ifstream inputFile("../kingsrow/Assets/first.txt");
+	std::string line;
+	int countLines = 0;
+	while (std::getline(inputFile, line)) {
+		if (countLines == 0) { // first string
+			currentSequence = line;
+		}
+		else { // rules
+			//A(x, y) :y <= 3#A(x * 1, x + y)
+			std::size_t loc1 = line.find(":");
+			std::size_t loc2 = line.find("#");
+			std::string command = line.substr(0,  loc1);
+			std::string comparison = line.substr(loc1 + 1, loc2 - (loc1 + 1));
+			std::string result = line.substr(loc2 + 1);
+			Rule rule = Rule(command, comparison, result);
+			rules.push_back(rule);
+		}
+		countLines++;
+	}
 
-	tableMesh->prepareForRendering();
 
-	std::vector<MeshNode*> drawArray;
-	drawArray.push_back(tableMesh);
+	createCylinder(1, 1);
+	rotateU(90);
+	rotateR(90);
+	createCylinder(1, 1, false);
+	saveTransformation();
+	createCylinder(2, 1);
+	rotateH(90);
+	createCylinder(1, 1);
+	resetTransformation();
+	rotateH(90);
+	createCylinder(1, 1, false);
+	translateH(2);
+	createCylinder(1, 1);
 
-	SceneNode* sceneGraph = new SceneNode(generateUuid(), NodeType::ROOT_NODE);
-	sceneGraph->setParent(nullptr);
 
+	//createCylinder(1, 1);
+	//createCylinder(2, 2, false);
+	//createCylinder(2, 1, false);
+	//createCylinder(1, 1);
 
-	SceneNode* transformNodeTable = new TransformNode(generateUuid(), glm::mat4(
+	//MeshNode* cylinderMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDER);
+	//MeshNode* xMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERX);
+	//MeshNode* yMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERY);
+	//MeshNode* zMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERZ);
+
+	//cylinderMesh->prepareForRendering();
+	//xMesh->prepareForRendering();
+	//yMesh->prepareForRendering();
+	//zMesh->prepareForRendering();
+
+	//drawArray.push_back(cylinderMesh);
+	//drawArray.push_back(xMesh);
+	//drawArray.push_back(yMesh);
+	//drawArray.push_back(zMesh);
+
+	/*SceneNode* transformNodeCylinder = new TransformNode(generateUuid(), glm::mat4(
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
-		0, 0, 0, 1));
-	
-	transformNodeTable->attachChild(tableMesh);
-	sceneGraph->attachChild(transformNodeTable);
+		0, 1, 0, 1));*/
+	//SceneNode* rotateY = new TransformNode(generateUuid(), glm::mat4(
+	//	cos(90 *PI / 180),0, sin(90 * PI / 180), 0,
+	//	0, 1, 0, 0,
+	//	-sin(90 * PI / 180), 0, cos(90 * PI / 180), 0,
+	//	0, 0, 0, 1));
+	//SceneNode* rotateY2 = new TransformNode(generateUuid(), glm::mat4(
+	//	cos(90 * PI / 180), 0, sin(90 * PI / 180), 0,
+	//	0, 1, 0, 0,
+	//	-sin(90 * PI / 180), 0, cos(90 * PI / 180), 0,
+	//	0, 0, 0, 1));
+	//SceneNode* rotateX = new TransformNode(generateUuid(), glm::mat4(
+	//	1, 0, 0, 0,
+	//	0, cos(90 * PI / 180), -sin(90 * PI / 180), 0,
+	//	0, sin(90 * PI / 180), cos(90 * PI / 180), 0,
+	//	0, 0, 0, 1));
+	//SceneNode* scale = new TransformNode(generateUuid(), glm::mat4(
+	//	2, 0, 0, 0,
+	//	0, 1, 0, 0,
+	//	0, 0, 1, 0,
+	//	0, 0, 0, 1));
+	/*SceneNode* transformNodeX = new TransformNode(generateUuid(), glm::mat4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		1, 1, 0, 1));*/
+	//SceneNode* transformNodeX2 = new TransformNode(generateUuid(), glm::mat4(
+	//	1, 0, 0, 0,
+	//	0, 1, 0, 0,
+	//	0, 0, 1, 0,
+	//	1, 0, 0, 1));
+	//SceneNode* transformNodeY = new TransformNode(generateUuid(), glm::mat4(
+	//	1, 0, 0, 0,
+	//	0, 1, 0, 0,
+	//	0, 0, 1, 0,
+	//	0, 1, 0, 1));
+	//SceneNode* transformNodeZ = new TransformNode(generateUuid(), glm::mat4(
+	//	1, 0, 0, 0,
+	//	0, 1, 0, 0,
+	//	0, 0, 1, 0,
+	//	0, 0, 1, 1));
+	//
+	//transformNodeCylinder->attachChild(cylinderMesh);
+	////rotateY->attachChild(transformNodeCylinder);
+	////rotateX->attachChild(rotateY);
+	//transformNodeX2->attachChild(scale);
+	//scale->attachChild(xMesh);
+	//rotateY2->attachChild(transformNodeX2);
+	//transformNodeX->attachChild(xMesh);
+	//rotateY->attachChild(transformNodeX);
+	//transformNodeY->attachChild(yMesh);
+	//transformNodeZ->attachChild(zMesh);
+	//sceneGraph->attachChild(transformNodeCylinder);
+	//sceneGraph->attachChild(transformNodeX);
+	//sceneGraph->attachChild(transformNodeY);
+	//sceneGraph->attachChild(transformNodeZ);
 
 	SceneNode* playerTransform = new TransformNode(generateUuid(), glm::mat4(
 		1, 0, 0, 0,
@@ -144,4 +268,82 @@ int main() {
 	return 0;
 }
 
+void createCylinder(int length, int radius, bool col)
+{
+	while (length > 0) {
+		MeshNode* mesh = 0;
+		if (col) {
+			mesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDER);
+		}
+		else {
+			mesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERZ);
+		}
+		mesh->prepareForRendering();
+		drawArray.push_back(mesh);
 
+		SceneNode* meshTransform = new TransformNode(generateUuid(), glm::mat4(
+			1, 0, 0, 0,
+			0, radius, 0, 0,
+			0, 0, radius, 0,
+			0, 0, 0, 1));
+
+		SceneNode* turtleTransform = new TransformNode(generateUuid(), glm::mat4(
+			turtlePosition));
+		
+		turtlePosition = glm::translate(turtlePosition, glm::vec3(1, 0, 0));
+
+		meshTransform->attachChild(mesh);
+		turtleTransform->attachChild(meshTransform);
+		sceneGraph->attachChild(turtleTransform);
+		length--;
+	}
+
+}
+
+void translateH(int length)
+{
+	turtlePosition = glm::translate(turtlePosition, glm::vec3(length, 0, 0));
+}
+
+void rotateU(int angle)
+{
+	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][1], turtlePosition[1][1], turtlePosition[2][1]));
+}
+
+void rotateR(int angle)
+{
+	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][0], turtlePosition[1][0], turtlePosition[2][0]));
+}
+
+void rotateH(int angle)
+{
+	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][2], turtlePosition[1][2], turtlePosition[2][2]));
+}
+
+void turn()
+{
+	rotateH(180);
+}
+
+void saveTransformation()
+{
+	transformationsStack.push_back(glm::mat4(turtlePosition));
+}
+
+void resetTransformation()
+{
+	if (transformationsStack.size() == 0) {
+		std::cout << "Transformation stack is empty, there is nothing to return to" << std::endl;
+		return;
+	}
+	turtlePosition = transformationsStack.back();
+	transformationsStack.pop_back();
+}
+
+void printMatrix(glm::mat4 matrix)
+{
+	std::cout << matrix[0][0] << matrix[0][1] << matrix[0][2] << matrix[0][3] << std::endl;
+	std::cout << matrix[1][0] << matrix[1][1] << matrix[1][2] << matrix[1][3] << std::endl;
+	std::cout << matrix[2][0] << matrix[2][1] << matrix[2][2] << matrix[2][3] << std::endl;
+	std::cout << matrix[3][0] << matrix[3][1] << matrix[3][2] << matrix[3][3] << std::endl;
+}

@@ -20,7 +20,7 @@ public:
 	//virtual void draw();
 	virtual glm::highp_mat4 propagateMatrix();
 	void attachChild(SceneNode* child);
-	bool detachChild(SceneNode* child);
+	SceneNode* detachChild(SceneNode* child);
 
 	NodeType getType();
 

@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.79.0 commit date:2018-03-22, commit time:14:10, hash:f4dc9f9d68b</authoring_tool>
     </contributor>
-    <created>2019-01-17T14:18:51</created>
-    <modified>2019-01-17T14:18:51</modified>
+    <created>2019-01-19T14:42:31</created>
+    <modified>2019-01-19T14:42:31</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -136,6 +136,164 @@
       </mesh>
     </geometry>
   </library_geometries>
+  <library_animations>
+    <animation id="Cylinder_scale_X">
+      <source id="Cylinder_scale_X-input">
+        <float_array id="Cylinder_scale_X-input-array" count="1">0.04166662</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_X-input-array" count="1" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_X-output">
+        <float_array id="Cylinder_scale_X-output-array" count="1">0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_X-output-array" count="1" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_X-interpolation">
+        <Name_array id="Cylinder_scale_X-interpolation-array" count="1">BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_X-interpolation-array" count="1" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_X-intangent">
+        <float_array id="Cylinder_scale_X-intangent-array" count="2">0 0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_X-intangent-array" count="1" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_X-outtangent">
+        <float_array id="Cylinder_scale_X-outtangent-array" count="2">0.08333331 0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_X-outtangent-array" count="1" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cylinder_scale_X-sampler">
+        <input semantic="INPUT" source="#Cylinder_scale_X-input"/>
+        <input semantic="OUTPUT" source="#Cylinder_scale_X-output"/>
+        <input semantic="INTERPOLATION" source="#Cylinder_scale_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cylinder_scale_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cylinder_scale_X-outtangent"/>
+      </sampler>
+      <channel source="#Cylinder_scale_X-sampler" target="Cylinder/scale.X"/>
+    </animation>
+    <animation id="Cylinder_scale_Y">
+      <source id="Cylinder_scale_Y-input">
+        <float_array id="Cylinder_scale_Y-input-array" count="1">0.04166662</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Y-input-array" count="1" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Y-output">
+        <float_array id="Cylinder_scale_Y-output-array" count="1">0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Y-output-array" count="1" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Y-interpolation">
+        <Name_array id="Cylinder_scale_Y-interpolation-array" count="1">BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Y-interpolation-array" count="1" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Y-intangent">
+        <float_array id="Cylinder_scale_Y-intangent-array" count="2">0 0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Y-intangent-array" count="1" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Y-outtangent">
+        <float_array id="Cylinder_scale_Y-outtangent-array" count="2">0.08333331 0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Y-outtangent-array" count="1" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cylinder_scale_Y-sampler">
+        <input semantic="INPUT" source="#Cylinder_scale_Y-input"/>
+        <input semantic="OUTPUT" source="#Cylinder_scale_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Cylinder_scale_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cylinder_scale_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cylinder_scale_Y-outtangent"/>
+      </sampler>
+      <channel source="#Cylinder_scale_Y-sampler" target="Cylinder/scale.Y"/>
+    </animation>
+    <animation id="Cylinder_scale_Z">
+      <source id="Cylinder_scale_Z-input">
+        <float_array id="Cylinder_scale_Z-input-array" count="1">0.04166662</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Z-input-array" count="1" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Z-output">
+        <float_array id="Cylinder_scale_Z-output-array" count="1">0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Z-output-array" count="1" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Z-interpolation">
+        <Name_array id="Cylinder_scale_Z-interpolation-array" count="1">BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Z-interpolation-array" count="1" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Z-intangent">
+        <float_array id="Cylinder_scale_Z-intangent-array" count="2">0 0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Z-intangent-array" count="1" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cylinder_scale_Z-outtangent">
+        <float_array id="Cylinder_scale_Z-outtangent-array" count="2">0.08333331 0.5</float_array>
+        <technique_common>
+          <accessor source="#Cylinder_scale_Z-outtangent-array" count="1" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cylinder_scale_Z-sampler">
+        <input semantic="INPUT" source="#Cylinder_scale_Z-input"/>
+        <input semantic="OUTPUT" source="#Cylinder_scale_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Cylinder_scale_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cylinder_scale_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cylinder_scale_Z-outtangent"/>
+      </sampler>
+      <channel source="#Cylinder_scale_Z-sampler" target="Cylinder/scale.Z"/>
+    </animation>
+  </library_animations>
   <library_controllers/>
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
@@ -148,7 +306,7 @@
         <instance_light url="#Lamp-light"/>
       </node>
       <node id="Cylinder" name="Cylinder" type="NODE">
-        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <matrix sid="transform">-2.18557e-8 0 0.5 0 0 0.5 0 0 -0.5 0 -2.18557e-8 0 0 0 0 1</matrix>
         <instance_geometry url="#Cylinder-mesh" name="Cylinder"/>
       </node>
     </visual_scene>
