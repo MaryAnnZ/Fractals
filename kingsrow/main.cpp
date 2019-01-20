@@ -35,6 +35,7 @@
 #include "Rule.h"
 
 #define PI 3.14159265
+#define ITERATIONS 5
 
 std::string w;
 SceneNode* sceneGraph;
@@ -45,8 +46,8 @@ glm::mat4 turtlePosition =  glm::mat4(
 	0, 1, 0, 0,
 	0, 0, 1, 0,
 	0, 0, 0, 1);
-std::string currentSequence;
 std::vector<Rule> rules;
+std::vector<char> commands{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
 
 void createCylinder(int length, int radius, bool col = true);
 void translateH(int length);
@@ -57,6 +58,8 @@ void turn();
 void saveTransformation();
 void resetTransformation();
 void printMatrix(glm::mat4 matrix);
+void callFunction(char function, int attr1, int attr2);
+void iterateW();
 
 
 int main() {
@@ -96,7 +99,7 @@ int main() {
 	int countLines = 0;
 	while (std::getline(inputFile, line)) {
 		if (countLines == 0) { // first string
-			currentSequence = line;
+			w = line;
 		}
 		else { // rules
 			//A(x, y) :y <= 3#A(x * 1, x + y)
@@ -110,21 +113,36 @@ int main() {
 		}
 		countLines++;
 	}
+	/* Alphabet
+	A - Create
+	B - TranslateH
+	C - RotateU
+	D - RotateR
+	E - RotateH
+	F - Turn
+	G - [
+	H - ]
+	*/
+	std::cout << w << std::endl;
+	for (int i = 0; i < ITERATIONS; i++) {
+		iterateW();
+		std::cout << w << std::endl;
+	}
+	
 
-
-	createCylinder(1, 1);
-	rotateU(90);
-	rotateR(90);
-	createCylinder(1, 1, false);
-	saveTransformation();
-	createCylinder(2, 1);
-	rotateH(90);
-	createCylinder(1, 1);
-	resetTransformation();
-	rotateH(90);
-	createCylinder(1, 1, false);
-	translateH(2);
-	createCylinder(1, 1);
+	//createCylinder(1, 1);
+	//rotateU(90);
+	//rotateR(90);
+	//createCylinder(1, 1, false);
+	//saveTransformation();
+	//createCylinder(2, 1);
+	//rotateH(90);
+	//createCylinder(1, 1);
+	//resetTransformation();
+	//rotateH(90);
+	//createCylinder(1, 1, false);
+	//translateH(2);
+	//createCylinder(1, 1);
 
 
 	//createCylinder(1, 1);
@@ -132,26 +150,26 @@ int main() {
 	//createCylinder(2, 1, false);
 	//createCylinder(1, 1);
 
-	//MeshNode* cylinderMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDER);
-	//MeshNode* xMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERX);
-	//MeshNode* yMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERY);
-	//MeshNode* zMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERZ);
+	MeshNode* cylinderMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDER);
+	MeshNode* xMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERX);
+	MeshNode* yMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERY);
+	MeshNode* zMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERZ);
 
-	//cylinderMesh->prepareForRendering();
-	//xMesh->prepareForRendering();
-	//yMesh->prepareForRendering();
-	//zMesh->prepareForRendering();
+	cylinderMesh->prepareForRendering();
+	xMesh->prepareForRendering();
+	yMesh->prepareForRendering();
+	zMesh->prepareForRendering();
 
-	//drawArray.push_back(cylinderMesh);
-	//drawArray.push_back(xMesh);
-	//drawArray.push_back(yMesh);
-	//drawArray.push_back(zMesh);
+	drawArray.push_back(cylinderMesh);
+	drawArray.push_back(xMesh);
+	drawArray.push_back(yMesh);
+	drawArray.push_back(zMesh);
 
-	/*SceneNode* transformNodeCylinder = new TransformNode(generateUuid(), glm::mat4(
+	SceneNode* transformNodeCylinder = new TransformNode(generateUuid(), glm::mat4(
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
-		0, 1, 0, 1));*/
+		6, 0, 1, 1));
 	//SceneNode* rotateY = new TransformNode(generateUuid(), glm::mat4(
 	//	cos(90 *PI / 180),0, sin(90 * PI / 180), 0,
 	//	0, 1, 0, 0,
@@ -172,41 +190,40 @@ int main() {
 	//	0, 1, 0, 0,
 	//	0, 0, 1, 0,
 	//	0, 0, 0, 1));
-	/*SceneNode* transformNodeX = new TransformNode(generateUuid(), glm::mat4(
+	SceneNode* transformNodeX = new TransformNode(generateUuid(), glm::mat4(
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
-		1, 1, 0, 1));*/
+		8, 0, 1, 1));
 	//SceneNode* transformNodeX2 = new TransformNode(generateUuid(), glm::mat4(
 	//	1, 0, 0, 0,
 	//	0, 1, 0, 0,
 	//	0, 0, 1, 0,
 	//	1, 0, 0, 1));
-	//SceneNode* transformNodeY = new TransformNode(generateUuid(), glm::mat4(
-	//	1, 0, 0, 0,
-	//	0, 1, 0, 0,
-	//	0, 0, 1, 0,
-	//	0, 1, 0, 1));
-	//SceneNode* transformNodeZ = new TransformNode(generateUuid(), glm::mat4(
-	//	1, 0, 0, 0,
-	//	0, 1, 0, 0,
-	//	0, 0, 1, 0,
-	//	0, 0, 1, 1));
-	//
-	//transformNodeCylinder->attachChild(cylinderMesh);
-	////rotateY->attachChild(transformNodeCylinder);
+	SceneNode* transformNodeY = new TransformNode(generateUuid(), glm::mat4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		10, 0, 1, 1));
+	SceneNode* transformNodeZ = new TransformNode(generateUuid(), glm::mat4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		12, 0, 1, 1));
+	
+	//rotateY->attachChild(transformNodeCylinder);
 	////rotateX->attachChild(rotateY);
 	//transformNodeX2->attachChild(scale);
 	//scale->attachChild(xMesh);
 	//rotateY2->attachChild(transformNodeX2);
-	//transformNodeX->attachChild(xMesh);
-	//rotateY->attachChild(transformNodeX);
-	//transformNodeY->attachChild(yMesh);
-	//transformNodeZ->attachChild(zMesh);
-	//sceneGraph->attachChild(transformNodeCylinder);
-	//sceneGraph->attachChild(transformNodeX);
-	//sceneGraph->attachChild(transformNodeY);
-	//sceneGraph->attachChild(transformNodeZ);
+	transformNodeCylinder->attachChild(cylinderMesh);
+	transformNodeX->attachChild(xMesh);
+	transformNodeY->attachChild(yMesh);
+	transformNodeZ->attachChild(zMesh);
+	sceneGraph->attachChild(transformNodeCylinder);
+	sceneGraph->attachChild(transformNodeX);
+	sceneGraph->attachChild(transformNodeY);
+	sceneGraph->attachChild(transformNodeZ);
 
 	SceneNode* playerTransform = new TransformNode(generateUuid(), glm::mat4(
 		1, 0, 0, 0,
@@ -270,6 +287,10 @@ int main() {
 
 void createCylinder(int length, int radius, bool col)
 {
+	if (length == 0 || radius == 0) {
+		return;
+	}
+	radius = 1;
 	while (length > 0) {
 		MeshNode* mesh = 0;
 		if (col) {
@@ -307,6 +328,9 @@ void translateH(int length)
 
 void rotateU(int angle)
 {
+	if (angle == 0) {
+		angle = 90;
+	}
 	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][1], turtlePosition[1][1], turtlePosition[2][1]));
 }
 
@@ -346,4 +370,143 @@ void printMatrix(glm::mat4 matrix)
 	std::cout << matrix[1][0] << matrix[1][1] << matrix[1][2] << matrix[1][3] << std::endl;
 	std::cout << matrix[2][0] << matrix[2][1] << matrix[2][2] << matrix[2][3] << std::endl;
 	std::cout << matrix[3][0] << matrix[3][1] << matrix[3][2] << matrix[3][3] << std::endl;
+}
+
+void callFunction(char function, int attr1, int attr2)
+{
+	/* Alphabet
+	A - Create
+	B - TranslateH
+	C - RotateU
+	D - RotateR
+	E - RotateH
+	F - Turn
+	G - [
+	H - ]
+	*/
+	switch (function)
+	{
+	case 'A': {
+		std::cout << "Create" << std::endl;
+		createCylinder(attr1, attr2);
+		break;
+	}
+	case 'B': {
+		std::cout << "Translate" << std::endl;
+		translateH(attr1);
+		break;
+	}
+	case 'C':{
+		std::cout << "RotateU" << std::endl;
+		rotateU(attr1);
+		break;
+	}
+	case 'D':{
+		std::cout << "RotateR" << std::endl;
+		rotateR(attr1);
+		break;
+	}
+	case 'E':{
+		std::cout << "RotateH" << std::endl;
+		rotateH(attr1);
+		break;
+		}
+	case 'F': {
+		std::cout << "Turn" << std::endl;
+		turn();
+		break;
+	}
+	case 'G':{
+		std::cout << "save" << std::endl;
+		saveTransformation();
+		break;
+		}
+	case 'H':{
+		std::cout << "restore" << std::endl;
+		resetTransformation();
+		break;
+		}
+	}
+}
+
+void iterateW()
+{
+	std::string updateW = "";
+	char function;
+	std::vector<int> attributes;
+	for (unsigned int i = 0; i < w.length(); i++) {
+		char currFunction = w.at(i);
+		if (std::find(commands.begin(), commands.end(), currFunction) != commands.end()) { // function found!
+			function = currFunction;
+			attributes.clear();
+			if (i < w.length() - 1) { // it is not the last element
+				if (w.at(i + 1) == '(') { // list of attributes
+					for (unsigned int a = i + 1; a < w.length(); a++) { //find the next ')'
+						if (w.at(a) == ')') {
+							std::string attrString = w.substr(i + 2, a - (i + 2)); // get string between ()
+							std::stringstream sstream;
+							sstream.str(attrString);
+							std::string currAttr;
+							while (std::getline(sstream, currAttr, ','))
+							{
+								attributes.push_back(std::stoi(currAttr));
+							}
+							//all functions and Attributes are found
+							//call turtle function
+							if (attributes.size() > 1) {
+								callFunction(function, attributes[0], attributes[1]);
+							}
+							else if (attributes.size() == 1) {
+								callFunction(function, attributes[0], 0);
+							}
+							else {
+								callFunction(function, 0, 0);
+							}
+							//update w according to the rules
+							bool ruleFound = false;
+							for (Rule rule : rules) {
+								if (rule.getFunction() == function && rule.getAttributes() == attributes.size()) { // matching rule found!
+									for (int attr : attributes) {
+										rule.addParam(attr);
+									}
+									std::string ruleOutput = rule.process();
+									if (!ruleOutput.empty()) { // conditions are ok
+										ruleFound = true;
+										updateW.append(ruleOutput);
+										break;
+									}
+								}
+							}
+							if (!ruleFound) { // no rule is satisfied so keep  the function 
+								updateW.append(std::string(1, function));
+								if (attributes.size() > 0) {
+									updateW.append("(");
+									for (int attrIndex = 0; attrIndex < attributes.size(); attrIndex++) {
+										updateW.append(std::to_string(attributes[attrIndex]));
+										if (attrIndex < attrIndex < attributes.size() - 1) {
+											updateW.append(",");
+										}
+										else {
+											updateW.append(")");
+										}
+									}
+								}
+							}
+							i = a; // skip to the end of attributes;
+							break;
+						}
+					}
+				}
+				else { //the function has no attributes
+					callFunction(function, 0, 0);
+					updateW.append(std::string(1, function));
+				}
+			}
+			else { // it is the last element without attributes
+				callFunction(function, 0, 0);
+				updateW.append(std::string(1, function));
+			}
+		}
+	}
+	w = updateW;
 }

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 class Rule
 {
@@ -15,9 +16,16 @@ public:
 	int getAttributes() { return attributes.size(); }
 
 private:
+
+	std::string getResult();
+	int getParam(std::string currentRule);
+
+	std::vector<char> commands{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
 	char function;
 	std::string rule;
 	std::string result;
+	std::vector<char> insertionOrder;
+	std::map<char, std::vector<std::string> >resultSegments;
 
 	std::vector<char> attributes;
 	std::vector<int> params;
