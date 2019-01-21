@@ -16,6 +16,27 @@ Rule::Rule(std::string command, std::string rule, std::string result)
 		}
 	} 
 	this->rule = rule;
+	andRules.clear();
+	orRules.clear();
+	std::size_t foundAnd = rule.find("&");
+	std::size_t foundOr = rule.find("|");
+	if (foundAnd != std::string::npos || foundOr != std::string::npos) { // AND rule
+		std::stringstream rules;
+		rules.str(rule);
+		std::string rulePart;
+		if (foundAnd != std::string::npos) {
+			while (std::getline(rules, rulePart, '&'))
+			{
+				andRules.push_back(rulePart);
+			}
+		} else if (foundOr != std::string::npos) {
+			while (std::getline(rules, rulePart, '|'))
+			{
+				orRules.push_back(rulePart);
+			}
+		}
+	}
+
 	this->result = result;
 
 	if (result.length() > 3) {
@@ -64,101 +85,31 @@ Rule::~Rule()
 std::string Rule::process()
 {
 	std::string result = "";
-	bool not = false;
-	std::string currentRule = rule;
-	if ( currentRule.at(0) == '!') { // !(x=y)
-		not = true;
-		currentRule = currentRule.substr(2, currentRule.length() - 3); //cut ! and ()
-	}
-
-	//rule is in form x (operator) y
-	//				  x (operator) number	
-	int indexAttribute = std::find(attributes.begin(), attributes.end(), currentRule.at(0)) - attributes.begin();
-	int firstparam = params.at(indexAttribute);
-	currentRule = currentRule.substr(1); // first attribute is cut
-	int secondParam;
-	//parse operator
-	char operatorFirstPart = currentRule.at(0);
-	currentRule = currentRule.substr(1);
-	switch (operatorFirstPart)
-	{
-	case '=': { 
-		secondParam = getParam(currentRule);
-		if (not) {
-			if (firstparam != secondParam) {
-				result = getResult();
-			}
+	bool tmpResults;
+	if (!andRules.empty()) {
+		tmpResults = true;
+		for (std::string rulePart : andRules) {
+			tmpResults = tmpResults && processRulePart(rulePart);
 		}
-		else if (firstparam == secondParam) {
+		if (tmpResults) {
 			result = getResult();
 		}
-		break;
-	}
-	case '!': { // second part MUST be =
-		if (currentRule.at(0) != '=') {
-			result = "";
-		}
-		currentRule = currentRule.substr(1);
-		secondParam = getParam(currentRule);
-		if (not) {
-			if (firstparam == secondParam) {
-				result = getResult();
-			}
-		} else if (firstparam != secondParam) {
-			result = getResult();
-		}
-		break;
-	}
-	case '<': { // second part could be =
-		if (currentRule.at(0) == '=') {
-			currentRule = currentRule.substr(1);
-			secondParam = getParam(currentRule);
-			if (not) {
-				if (firstparam > secondParam) {
-					result = getResult();
-				}
-			} else if (firstparam <= secondParam) {
-				result = getResult();
-			}
-		} else {
-			secondParam = getParam(currentRule);
-			if (not) {
-				if (firstparam >= secondParam) {
-					result = getResult();
-				}
-			} else if (firstparam < secondParam) {
-				result = getResult();
-			}
-		}
-		break;
-	}
-	case '>': { // second part could be =
-		if (currentRule.at(0) == '=') {
-			currentRule = currentRule.substr(1);
-			secondParam = getParam(currentRule);
-			if (not) {
-				if (firstparam < secondParam) {
-					result = getResult();
-				}
-			} else if (firstparam >= secondParam) {
-				result = getResult();
-			}
-		}
-		else {
-			secondParam = getParam(currentRule);
-			if (not) {
-				if (firstparam <= secondParam) {
-					result = getResult();
-				}
-			} else if (firstparam > secondParam) {
-				result = getResult();
-			}
-		}
-		break;
 	} 
-	default:
-		break;
+	else if (!orRules.empty()) {
+		tmpResults = false;
+		for (std::string rulePart : orRules) {
+			tmpResults = tmpResults || processRulePart(rulePart);
+			if (tmpResults) {
+				result = getResult();
+			}
+		}
 	}
+	else {
+		if (processRulePart(rule)) {
+			result = getResult();
+		}
+	}
+	
 	params.clear();
 	return result;
 }
@@ -248,4 +199,110 @@ int Rule::getParam(std::string currentRule)
 	else {
 		return std::stoi(currentRule);
 	};
+}
+
+bool Rule::processRulePart(std::string rulePart)
+{
+	bool not = false;
+	std::string currentRule = rulePart;
+	if (currentRule.at(0) == '!') { // !(x=y)
+		not = true;
+		currentRule = currentRule.substr(2, currentRule.length() - 3); //cut ! and ()
+	}
+
+	//rule is in form x (operator) y
+	//				  x (operator) number	
+	int indexAttribute = std::find(attributes.begin(), attributes.end(), currentRule.at(0)) - attributes.begin();
+	int firstparam = params.at(indexAttribute);
+	currentRule = currentRule.substr(1); // first attribute is cut
+	int secondParam;
+	//parse operator
+	char operatorFirstPart = currentRule.at(0);
+	currentRule = currentRule.substr(1);
+	switch (operatorFirstPart)
+	{
+	case '=': {
+		secondParam = getParam(currentRule);
+		if (not) {
+			if (firstparam != secondParam) {
+				return true;
+			}
+		}
+		else if (firstparam == secondParam) {
+			return true;
+		}
+		break;
+	}
+	case '!': { // second part MUST be =
+		if (currentRule.at(0) != '=') {
+			return false;
+		}
+		currentRule = currentRule.substr(1);
+		secondParam = getParam(currentRule);
+		if (not) {
+			if (firstparam == secondParam) {
+				return true;
+			}
+		}
+		else if (firstparam != secondParam) {
+			return true;
+		}
+		break;
+	}
+	case '<': { // second part could be =
+		if (currentRule.at(0) == '=') {
+			currentRule = currentRule.substr(1);
+			secondParam = getParam(currentRule);
+			if (not) {
+				if (firstparam > secondParam) {
+					return true;
+				}
+			}
+			else if (firstparam <= secondParam) {
+				return true;
+			}
+		}
+		else {
+			secondParam = getParam(currentRule);
+			if (not) {
+				if (firstparam >= secondParam) {
+					return true;
+				}
+			}
+			else if (firstparam < secondParam) {
+				return true;
+			}
+		}
+		break;
+	}
+	case '>': { // second part could be =
+		if (currentRule.at(0) == '=') {
+			currentRule = currentRule.substr(1);
+			secondParam = getParam(currentRule);
+			if (not) {
+				if (firstparam < secondParam) {
+					return true;
+				}
+			}
+			else if (firstparam >= secondParam) {
+				return true;
+			}
+		}
+		else {
+			secondParam = getParam(currentRule);
+			if (not) {
+				if (firstparam <= secondParam) {
+					return true;
+				}
+			}
+			else if (firstparam > secondParam) {
+				return true;
+			}
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	return false;
 }

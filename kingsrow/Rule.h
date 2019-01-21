@@ -19,10 +19,13 @@ private:
 
 	std::string getResult();
 	int getParam(std::string currentRule);
+	bool processRulePart(std::string rulePart);
 
 	std::vector<char> commands{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
 	char function;
 	std::string rule;
+	std::vector<std::string> andRules;
+	std::vector<std::string> orRules;
 	std::string result;
 	std::vector<char> insertionOrder;
 	std::map<char, std::vector<std::string> >resultSegments;
