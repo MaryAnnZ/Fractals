@@ -49,16 +49,16 @@ glm::mat4 turtlePosition =  glm::mat4(
 std::vector<Rule> rules;
 std::vector<char> commands{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
 
-void createCylinder(int length, int radius, bool col = true);
-void translateH(int length);
-void rotateU(int angle);
-void rotateR(int angle);
-void rotateH(int angle);
+void createCylinder(int length, float radius, bool col = true);
+void translateH(float length);
+void rotateU(float angle);
+void rotateR(float angle);
+void rotateH(float angle);
 void turn();
 void saveTransformation();
 void resetTransformation();
 void printMatrix(glm::mat4 matrix);
-void callFunction(char function, int attr1, int attr2);
+void callFunction(char function, float attr1, float attr2);
 void iterateW();
 
 
@@ -285,12 +285,12 @@ int main() {
 	return 0;
 }
 
-void createCylinder(int length, int radius, bool col)
+void createCylinder(int length, float radius, bool col)
 {
 	if (length == 0 || radius == 0) {
 		return;
 	}
-	radius = 1;
+	//radius = 1;
 	while (length > 0) {
 		MeshNode* mesh = 0;
 		if (col) {
@@ -303,10 +303,10 @@ void createCylinder(int length, int radius, bool col)
 		drawArray.push_back(mesh);
 
 		SceneNode* meshTransform = new TransformNode(generateUuid(), glm::mat4(
-			1, 0, 0, 0,
-			0, radius, 0, 0,
-			0, 0, radius, 0,
-			0, 0, 0, 1));
+			1.0, 0.0, 0.0, 0.0,
+			0.0, radius, 0.0, 0.0,
+			0.0, 0.0, radius, 0.0,
+			0.0, 0.0, 0.0, 1.0));
 
 		SceneNode* turtleTransform = new TransformNode(generateUuid(), glm::mat4(
 			turtlePosition));
@@ -321,12 +321,12 @@ void createCylinder(int length, int radius, bool col)
 
 }
 
-void translateH(int length)
+void translateH(float length)
 {
 	turtlePosition = glm::translate(turtlePosition, glm::vec3(length, 0, 0));
 }
 
-void rotateU(int angle)
+void rotateU(float angle)
 {
 	if (angle == 0) {
 		angle = 90;
@@ -334,12 +334,12 @@ void rotateU(int angle)
 	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][1], turtlePosition[1][1], turtlePosition[2][1]));
 }
 
-void rotateR(int angle)
+void rotateR(float angle)
 {
 	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][0], turtlePosition[1][0], turtlePosition[2][0]));
 }
 
-void rotateH(int angle)
+void rotateH(float angle)
 {
 	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][2], turtlePosition[1][2], turtlePosition[2][2]));
 }
@@ -372,7 +372,7 @@ void printMatrix(glm::mat4 matrix)
 	std::cout << matrix[3][0] << matrix[3][1] << matrix[3][2] << matrix[3][3] << std::endl;
 }
 
-void callFunction(char function, int attr1, int attr2)
+void callFunction(char function, float attr1, float attr2)
 {
 	/* Alphabet
 	A - Create
@@ -388,7 +388,7 @@ void callFunction(char function, int attr1, int attr2)
 	{
 	case 'A': {
 		std::cout << "Create" << std::endl;
-		createCylinder(attr1, attr2);
+		createCylinder(static_cast<int>(attr1), attr2);
 		break;
 	}
 	case 'B': {
@@ -433,7 +433,7 @@ void iterateW()
 {
 	std::string updateW = "";
 	char function;
-	std::vector<int> attributes;
+	std::vector<float> attributes;
 	for (unsigned int i = 0; i < w.length(); i++) {
 		char currFunction = w.at(i);
 		if (std::find(commands.begin(), commands.end(), currFunction) != commands.end()) { // function found!
@@ -449,7 +449,7 @@ void iterateW()
 							std::string currAttr;
 							while (std::getline(sstream, currAttr, ','))
 							{
-								attributes.push_back(std::stoi(currAttr));
+								attributes.push_back(std::atof(currAttr.c_str()));
 							}
 							//all functions and Attributes are found
 							//call turtle function
@@ -457,10 +457,10 @@ void iterateW()
 								callFunction(function, attributes[0], attributes[1]);
 							}
 							else if (attributes.size() == 1) {
-								callFunction(function, attributes[0], 0);
+								callFunction(function, attributes[0], 0.0);
 							}
 							else {
-								callFunction(function, 0, 0);
+								callFunction(function, 0.0, 0.0);
 							}
 							//update w according to the rules
 							bool ruleFound = false;
@@ -498,12 +498,12 @@ void iterateW()
 					}
 				}
 				else { //the function has no attributes
-					callFunction(function, 0, 0);
+					callFunction(function, 0.0, 0.0);
 					updateW.append(std::string(1, function));
 				}
 			}
 			else { // it is the last element without attributes
-				callFunction(function, 0, 0);
+				callFunction(function, 0.0, 0.0);
 				updateW.append(std::string(1, function));
 			}
 		}

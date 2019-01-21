@@ -139,34 +139,34 @@ std::string Rule::getResult()
 			if (foundPlus != std::string::npos) {
 				std::string firstAttr = currentSegment.substr(0, foundPlus);
 				std::string secondAttr = currentSegment.substr(foundPlus + 1);
-				int firstparam = getParam(firstAttr);
-				int secondparam = getParam(secondAttr);
-				int res = firstparam + secondparam;
+				float firstparam = getParam(firstAttr);
+				float secondparam = getParam(secondAttr);
+				float res = firstparam + secondparam;
 				returnVal.append(std::to_string(res));
 			}
 			else if (foundMinus != std::string::npos) {
 				std::string firstAttr = currentSegment.substr(0, foundMinus);
 				std::string secondAttr = currentSegment.substr(foundMinus + 1);
-				int firstparam = getParam(firstAttr);
-				int secondparam = getParam(secondAttr);
-				int res = firstparam - secondparam;
+				float firstparam = getParam(firstAttr);
+				float secondparam = getParam(secondAttr);
+				float res = firstparam - secondparam;
 				returnVal.append(std::to_string(res));
 
 			}
 			else if (foundMul != std::string::npos) {
 				std::string firstAttr = currentSegment.substr(0, foundMul);
 				std::string secondAttr = currentSegment.substr(foundMul + 1);
-				int firstparam = getParam(firstAttr);
-				int secondparam = getParam(secondAttr);
-				int res = firstparam * secondparam;
+				float firstparam = getParam(firstAttr);
+				float secondparam = getParam(secondAttr);
+				float res = firstparam * secondparam;
 				returnVal.append(std::to_string(res));
 			}
 			else if (foundDiv != std::string::npos) {
 				std::string firstAttr = currentSegment.substr(0, foundDiv);
 				std::string secondAttr = currentSegment.substr(foundDiv + 1);
-				int firstparam = getParam(firstAttr);
-				int secondparam = getParam(secondAttr);
-				int res = firstparam / secondparam;
+				float firstparam = getParam(firstAttr);
+				float secondparam = getParam(secondAttr);
+				float res = firstparam / secondparam;
 				returnVal.append(std::to_string(res));
 			}
 			else { //if there is no operator, it should be an attribute
@@ -183,7 +183,7 @@ std::string Rule::getResult()
 	return returnVal;
 }
 
-int Rule::getParam(std::string currentRule)
+float Rule::getParam(std::string currentRule)
 {	
 	bool letter = false;
 	for (int i = 0; i < currentRule.length(); ++i) {
@@ -197,7 +197,7 @@ int Rule::getParam(std::string currentRule)
 		return params.at(std::find(attributes.begin(), attributes.end(), currentRule.at(0)) - attributes.begin());
 	}
 	else {
-		return std::stoi(currentRule);
+		return std::atof(currentRule.c_str());
 	};
 }
 
@@ -213,9 +213,9 @@ bool Rule::processRulePart(std::string rulePart)
 	//rule is in form x (operator) y
 	//				  x (operator) number	
 	int indexAttribute = std::find(attributes.begin(), attributes.end(), currentRule.at(0)) - attributes.begin();
-	int firstparam = params.at(indexAttribute);
+	float firstparam = params.at(indexAttribute);
 	currentRule = currentRule.substr(1); // first attribute is cut
-	int secondParam;
+	float secondParam;
 	//parse operator
 	char operatorFirstPart = currentRule.at(0);
 	currentRule = currentRule.substr(1);

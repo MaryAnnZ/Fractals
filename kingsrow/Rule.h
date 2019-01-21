@@ -10,7 +10,7 @@ public:
 	Rule(std::string command, std::string rule, std::string result);
 	~Rule();
 
-	void addParam(int value) { params.push_back(value); }
+	void addParam(float value) { params.push_back(value); }
 	std::string process();
 	char getFunction() { return function; }
 	int getAttributes() { return attributes.size(); }
@@ -18,7 +18,7 @@ public:
 private:
 
 	std::string getResult();
-	int getParam(std::string currentRule);
+	float getParam(std::string currentRule);
 	bool processRulePart(std::string rulePart);
 
 	std::vector<char> commands{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
@@ -31,7 +31,7 @@ private:
 	std::map<char, std::vector<std::string> >resultSegments;
 
 	std::vector<char> attributes;
-	std::vector<int> params;
+	std::vector<float> params;
 
 };
 
