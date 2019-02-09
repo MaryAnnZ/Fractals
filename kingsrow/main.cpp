@@ -5,6 +5,7 @@
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/transform.hpp>
 
 #include <iostream>
 #include <math.h>
@@ -35,10 +36,14 @@
 #include "Rule.h"
 
 #define PI 3.14159265
-#define ITERATIONS 5
 
+//working string of the pL-system
 std::string w;
 SceneNode* sceneGraph;
+//rotation node for x
+TransformNode* rotationTransformX;
+//rotatin node for Z
+TransformNode* rotationTransformZ;
 std::vector<MeshNode*> drawArray;
 std::vector<glm::mat4> transformationsStack;
 glm::mat4 turtlePosition =  glm::mat4(
@@ -49,6 +54,7 @@ glm::mat4 turtlePosition =  glm::mat4(
 std::vector<Rule> rules;
 std::vector<char> commands{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
 
+//turtle comman functions
 void createCylinder(int length, float radius, bool col = true);
 void translateH(float length);
 void rotateU(float angle);
@@ -59,46 +65,75 @@ void saveTransformation();
 void resetTransformation();
 void printMatrix(glm::mat4 matrix);
 void callFunction(char function, float attr1, float attr2);
+//rewrite the working string of the pL-system
 void iterateW();
 
 
 int main() {
-
+	int iterations = 10;
 	int viewPortResX = 1024;
 	int viewPortResY = 756;
+
+	//setup renderer
 	Renderer* renderer = Renderer::getInstance();
 	if (renderer->init(viewPortResX, viewPortResY) == -1) {
 		return -1;
 	}
 
+	//setup input handler
 	InputHandler* input = new InputHandler();
 
+	//setup root of scene graph
 	sceneGraph = new SceneNode(generateUuid(), NodeType::ROOT_NODE);
 	sceneGraph->setParent(nullptr);
 
-	//Texture* rainbowTexture = new Texture("../kingsrow/Assets/Models/duck_textures/rainbow.jpg");
-
+	//setup camera
 	std::map<std::string, CameraNode*> cameraList;
-
-	//start of part that should be in a scene loader
 	CameraNode* activeCamera = new CameraNode(generateUuid(), viewPortResX, viewPortResY);
-
-
-	//this way we have a list of cameras and can switch between them as we want just by doing activeCamera = cameraList.find("whichever camera we want")->second;
 	cameraList.insert(std::pair<std::string, CameraNode*>(std::string("player camera"), activeCamera));
 
+	//setup rotation matrix for rotate around x and z
+	rotationTransformX = new TransformNode(generateUuid(), glm::mat4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1));
+	rotationTransformZ = new TransformNode(generateUuid(), glm::mat4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1));
+	float zAngle = 0;
+	float xAngle = 0;
+	sceneGraph->attachChild(rotationTransformZ);
+	rotationTransformZ->attachChild(rotationTransformX);
 
+	//setup lights, there are two directional lights facing in opposite directions
 	std::vector<LightNode*> lights1;
-	//room 1
-	LightNode* firstLight = new PointLightNode(generateUuid(), glm::vec3(0, 2, 0), 10.0f, glm::vec3(1, 1, 1), LightType::POINT_LIGHT);
+	LightNode* firstLight = new DirectionalLightNode(generateUuid(), glm::vec3(0, 2, 0), 1.0f, glm::vec3(1, 1, 1), glm::vec3(0, -1, 0), LightType::DIRECTIONAL_LIGHT);
+	LightNode* secondLight = new DirectionalLightNode(generateUuid(), glm::vec3(0, 2, 0), 1.0f, glm::vec3(1, 1, 1), glm::vec3(0, 1, 0), LightType::DIRECTIONAL_LIGHT);
 	lights1.push_back(firstLight);
+	lights1.push_back(secondLight);
 	renderer->setLights(lights1);
 
-	std::ifstream inputFile("../kingsrow/Assets/first.txt");
+	//read config file
+	std::ifstream configFile("../kingsrow/Assets/config.txt");
 	std::string line;
+	std::string pLsystem;
+	while (std::getline(configFile, line)) {
+		if (line.at(0) != '%') {
+			pLsystem = line;
+			break;
+		}
+	}
+
+	//read the pL-system file
+	std::ifstream inputFile(pLsystem);
 	int countLines = 0;
 	while (std::getline(inputFile, line)) {
-		if (countLines == 0) { // first string
+		if (countLines == 0) { //iterations
+			iterations = std::stoi(line);
+		} else if (countLines == 1) { // first string
 			w = line;
 		}
 		else { // rules
@@ -113,6 +148,7 @@ int main() {
 		}
 		countLines++;
 	}
+
 	/* Alphabet
 	A - Create
 	B - TranslateH
@@ -124,12 +160,12 @@ int main() {
 	H - ]
 	*/
 	std::cout << w << std::endl;
-	for (int i = 0; i < ITERATIONS; i++) {
+	for (int i = 0; i < iterations; i++) {
 		iterateW();
 		std::cout << w << std::endl;
 	}
 	
-
+	//test turtle commands by hand
 	//createCylinder(1, 1);
 	//rotateU(90);
 	//rotateR(90);
@@ -144,103 +180,19 @@ int main() {
 	//translateH(2);
 	//createCylinder(1, 1);
 
-
-	//createCylinder(1, 1);
-	//createCylinder(2, 2, false);
-	//createCylinder(2, 1, false);
-	//createCylinder(1, 1);
-
-	MeshNode* cylinderMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDER);
-	MeshNode* xMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERX);
-	MeshNode* yMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERY);
-	MeshNode* zMesh = MeshImporter::getInstance()->getMesh(MeshLoadInfo::CYLINDERZ);
-
-	cylinderMesh->prepareForRendering();
-	xMesh->prepareForRendering();
-	yMesh->prepareForRendering();
-	zMesh->prepareForRendering();
-
-	drawArray.push_back(cylinderMesh);
-	drawArray.push_back(xMesh);
-	drawArray.push_back(yMesh);
-	drawArray.push_back(zMesh);
-
-	SceneNode* transformNodeCylinder = new TransformNode(generateUuid(), glm::mat4(
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		6, 0, 1, 1));
-	//SceneNode* rotateY = new TransformNode(generateUuid(), glm::mat4(
-	//	cos(90 *PI / 180),0, sin(90 * PI / 180), 0,
-	//	0, 1, 0, 0,
-	//	-sin(90 * PI / 180), 0, cos(90 * PI / 180), 0,
-	//	0, 0, 0, 1));
-	//SceneNode* rotateY2 = new TransformNode(generateUuid(), glm::mat4(
-	//	cos(90 * PI / 180), 0, sin(90 * PI / 180), 0,
-	//	0, 1, 0, 0,
-	//	-sin(90 * PI / 180), 0, cos(90 * PI / 180), 0,
-	//	0, 0, 0, 1));
-	//SceneNode* rotateX = new TransformNode(generateUuid(), glm::mat4(
-	//	1, 0, 0, 0,
-	//	0, cos(90 * PI / 180), -sin(90 * PI / 180), 0,
-	//	0, sin(90 * PI / 180), cos(90 * PI / 180), 0,
-	//	0, 0, 0, 1));
-	//SceneNode* scale = new TransformNode(generateUuid(), glm::mat4(
-	//	2, 0, 0, 0,
-	//	0, 1, 0, 0,
-	//	0, 0, 1, 0,
-	//	0, 0, 0, 1));
-	SceneNode* transformNodeX = new TransformNode(generateUuid(), glm::mat4(
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		8, 0, 1, 1));
-	//SceneNode* transformNodeX2 = new TransformNode(generateUuid(), glm::mat4(
-	//	1, 0, 0, 0,
-	//	0, 1, 0, 0,
-	//	0, 0, 1, 0,
-	//	1, 0, 0, 1));
-	SceneNode* transformNodeY = new TransformNode(generateUuid(), glm::mat4(
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		10, 0, 1, 1));
-	SceneNode* transformNodeZ = new TransformNode(generateUuid(), glm::mat4(
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		12, 0, 1, 1));
-	
-	//rotateY->attachChild(transformNodeCylinder);
-	////rotateX->attachChild(rotateY);
-	//transformNodeX2->attachChild(scale);
-	//scale->attachChild(xMesh);
-	//rotateY2->attachChild(transformNodeX2);
-	transformNodeCylinder->attachChild(cylinderMesh);
-	transformNodeX->attachChild(xMesh);
-	transformNodeY->attachChild(yMesh);
-	transformNodeZ->attachChild(zMesh);
-	sceneGraph->attachChild(transformNodeCylinder);
-	sceneGraph->attachChild(transformNodeX);
-	sceneGraph->attachChild(transformNodeY);
-	sceneGraph->attachChild(transformNodeZ);
-
+	//setup the moving player node
 	SceneNode* playerTransform = new TransformNode(generateUuid(), glm::mat4(
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1));
-
 	PlayerNode* player = new PlayerNode(generateUuid());
 	player->setCamera(activeCamera);
 	playerTransform->attachChild(activeCamera);
 	playerTransform->attachChild(player);
 	sceneGraph->attachChild(playerTransform);
 
-	//should probably done recursively in sceneNode		
-
-	//end of part that should be in a scene loader
-
+	//setup timer
 	double time = glfwGetTime();
 	double oldTime = glfwGetTime();
 	double timeStep = 1.0 / 60.0;
@@ -252,6 +204,25 @@ int main() {
 
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+		//handle input
+		if (input->up) {
+			zAngle += 10;
+			rotationTransformZ->setNewTransform(glm::highp_mat4(glm::rotate(zAngle, (float)0.0, (float)0.0, (float)1.0)));
+		}
+		if (input->down) {
+			zAngle -= 10;
+			rotationTransformZ->setNewTransform(glm::highp_mat4(glm::rotate(zAngle, (float)0.0, (float)0.0, (float)1.0)));
+		}
+		if (input->left) {
+			xAngle += 10;
+			rotationTransformX->setNewTransform(glm::highp_mat4(glm::rotate(xAngle, (float)1.0, (float)0.0, (float)0.0)));
+		}
+		if (input->right) {
+			xAngle -= 10;
+			rotationTransformX->setNewTransform(glm::highp_mat4(glm::rotate(xAngle, (float)1.0, (float)0.0, (float)0.0)));
+		}
+
+		//update scene graph
 		time = glfwGetTime();
 		double deltaTime = time - oldTime;
 		while (deltaTime > timeStep)
@@ -261,10 +232,9 @@ int main() {
 		}
 		oldTime = time - deltaTime;
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
 
-
+		//get relevant matrices
 		glm::mat4 projectionMatrix = activeCamera->getProjectionMatrix();
 		glm::mat4 viewMatrix = activeCamera->getViewMatrix();
 		glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
@@ -315,7 +285,7 @@ void createCylinder(int length, float radius, bool col)
 
 		meshTransform->attachChild(mesh);
 		turtleTransform->attachChild(meshTransform);
-		sceneGraph->attachChild(turtleTransform);
+		rotationTransformX->attachChild(turtleTransform);
 		length--;
 	}
 
@@ -328,9 +298,6 @@ void translateH(float length)
 
 void rotateU(float angle)
 {
-	if (angle == 0) {
-		angle = 90;
-	}
 	turtlePosition = glm::rotate(turtlePosition, (float)angle, glm::vec3(turtlePosition[0][1], turtlePosition[1][1], turtlePosition[2][1]));
 }
 
@@ -483,7 +450,7 @@ void iterateW()
 									updateW.append("(");
 									for (int attrIndex = 0; attrIndex < attributes.size(); attrIndex++) {
 										updateW.append(std::to_string(attributes[attrIndex]));
-										if (attrIndex < attrIndex < attributes.size() - 1) {
+										if (attrIndex < attributes.size() - 1) {
 											updateW.append(",");
 										}
 										else {

@@ -13,7 +13,7 @@ public:
 	~InputHandler();
 	void update(GLFWwindow* window);
 
-	bool w, a, s, d, esc;
+	bool w, a, s, d, esc, up, down, right, left;
 	double xPos, yPos;
 };
 

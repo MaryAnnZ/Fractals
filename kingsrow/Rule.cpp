@@ -3,12 +3,9 @@
 #include <sstream>
 
 
-           //A(x,y)             y<=3              A(x*1,x+y)
 Rule::Rule(std::string command, std::string rule, std::string result)
 {
 	function = command.at(0);
-	//std::size_t startIndexAttributes = command.find("(");
-	//std::size_t endIndexAttributes = command.find(")");
 	std::string rawAttributes = command.substr(command.find("("));
 	for (unsigned int i = 0; i < rawAttributes.size(); ++i) {
 		if (i % 2 == 1) {
@@ -81,11 +78,12 @@ Rule::~Rule()
 {
 }
 
-//= != < > <= >= ! (U A)
+//evaluate the parameters of the specific command. If it meetd the conditions return the updated string
 std::string Rule::process()
 {
 	std::string result = "";
 	bool tmpResults;
+	//process conditions which are connected with AND
 	if (!andRules.empty()) {
 		tmpResults = true;
 		for (std::string rulePart : andRules) {
@@ -95,6 +93,7 @@ std::string Rule::process()
 			result = getResult();
 		}
 	} 
+	//process conditions which are connected with OR
 	else if (!orRules.empty()) {
 		tmpResults = false;
 		for (std::string rulePart : orRules) {
@@ -104,6 +103,7 @@ std::string Rule::process()
 			}
 		}
 	}
+	//process single condition
 	else {
 		if (processRulePart(rule)) {
 			result = getResult();
@@ -114,7 +114,7 @@ std::string Rule::process()
 	return result;
 }
 
-//A(x*1,x+y) A(x*1,x+y) A   
+//calculate the new string according to the template of the rule 
 std::string Rule::getResult()
 {
 	if (result.length() <= 3) {
@@ -183,6 +183,7 @@ std::string Rule::getResult()
 	return returnVal;
 }
 
+//get the value of the attribute
 float Rule::getParam(std::string currentRule)
 {	
 	bool letter = false;
@@ -201,6 +202,7 @@ float Rule::getParam(std::string currentRule)
 	};
 }
 
+//evaluate one condition
 bool Rule::processRulePart(std::string rulePart)
 {
 	bool not = false;

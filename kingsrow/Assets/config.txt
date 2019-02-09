@@ -1,0 +1,3 @@
+%../kingsrow/Assets/flower.txt
+%../kingsrow/Assets/cross.txt
+../kingsrow/Assets/spiral.txt

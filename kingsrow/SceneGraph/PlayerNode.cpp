@@ -32,9 +32,9 @@ void PlayerNode::update(double deltaTime, InputHandler* input)
 	//std::cerr << "model Matrix: " << propagateMatrix() << std::endl;
 
 	if (input->w)
-		position += glm::normalize(glm::vec3(direction.x, 0.f, direction.z)) * (float)deltaTime * speed;
+		position += glm::normalize(glm::vec3(direction.x, direction.y, direction.z)) * (float)deltaTime * speed;
 	if (input->s)
-		position += -glm::normalize(glm::vec3(direction.x, 0.f, direction.z)) * (float)deltaTime * speed;
+		position += -glm::normalize(glm::vec3(direction.x, direction.y, direction.z)) * (float)deltaTime * speed;
 	if (input->a)
 		position += -right * (float)deltaTime * speed;
 	if (input->d)
