@@ -225,7 +225,11 @@ bool Rule::processRulePart(std::string rulePart)
 	currentRule = currentRule.substr(1);
 	switch (operatorFirstPart)
 	{
-	case '=': {
+	case '=': {// second part MUST be =
+		if (currentRule.at(0) != '=') {
+			return false;
+		}
+		currentRule = currentRule.substr(1);
 		secondParam = getParam(currentRule);
 		if (not) {
 			if (firstparam != secondParam) {
