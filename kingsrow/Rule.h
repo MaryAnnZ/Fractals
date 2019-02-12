@@ -35,7 +35,7 @@ private:
 	std::vector<std::string> orRules;
 	std::string result;
 	std::vector<char> insertionOrder;
-	std::map<char, std::vector<std::string> >resultSegments;
+	std::vector<std::vector<std::string> > resultSegments;
 
 	//the variables of the commands
 	std::vector<char> attributes;

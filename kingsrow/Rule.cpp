@@ -52,7 +52,7 @@ Rule::Rule(std::string command, std::string rule, std::string result)
 									subsegments.push_back(segment);
 								}
 								insertionOrder.push_back(result.at(i));
-								resultSegments[result.at(i)] = subsegments;
+								resultSegments.push_back(subsegments);
 								i = a;
 								break;
 							}
@@ -60,12 +60,12 @@ Rule::Rule(std::string command, std::string rule, std::string result)
 					}
 					else {//this function has no attributes
 						insertionOrder.push_back(result.at(i));
-						resultSegments[result.at(i)] = std::vector<std::string>();
+						resultSegments.push_back(std::vector<std::string>());
 					}
 				}
 				else { //this is the last element without attributes
 					insertionOrder.push_back(result.at(i));
-					resultSegments[result.at(i)] = std::vector<std::string>();
+					resultSegments.push_back(std::vector<std::string>());
 				}
 			}
 		}
@@ -123,9 +123,11 @@ std::string Rule::getResult()
 	
 	std::string returnVal = "";
 	// + - * /
-	for (char c : insertionOrder) {
+	for (unsigned int charIndex = 0; charIndex < insertionOrder.size(); ++charIndex) {
+	//for (char c : insertionOrder) {
+		char c = insertionOrder.at(charIndex);
 		returnVal.append(std::string(1, c));
-		std::vector<std::string> segments = resultSegments[c];
+		std::vector<std::string> segments = resultSegments.at(charIndex);
 		for (unsigned int i = 0; i < segments.size(); i++) {
 			if (i == 0) {
 				returnVal.append("(");
